@@ -86,26 +86,86 @@ Instalando MySQL
    
    Magento
    
-    - Instalando
-     
-        Instalando o php composer
-           - curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/bin --filename=composer
-           - composer -V
+    Instalando o php composer
+       - curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/bin --filename=composer
+       - composer -V
         
-        Download e extração do arquivo
-           - cd /var/www/html
-           - wget https://github.com/magento/magento2/archive/2.1.zip
-           - unzip 2.1.zip
-           - mv magento2-2.1 magento2
-           
+    Download e extração do arquivo
+       - cd /var/www/html
+       - wget https://github.com/magento/magento2/archive/2.1.zip
+       - unzip 2.1.zip
+       - mv magento2-2.1 magento2
+       
+       Instalando dependencias php
+        - cd magento2
+	- composer install -v
+	
+    Configurando virtual host magento
+    	- cd /etc/nginx/
+	- vim conf.d/magento.conf
+	
+	upstream fastcgi_backend {
+        server  unix:/run/php/php-fpm.sock;
+		}
+ 
+	server {
+ 
+        	listen 80;
+        	server_name site.lojamagento.cf;
+        	set $MAGE_ROOT /var/www/html/magento2;
+        	set $MAGE_MODE developer;
+        	include /var/www/html/magento2/nginx.conf.sample;
+	}
+	
+      - nginx -t
+      - systemctl restart nginx
       
+Instalando Magento
+
+cd /var/www/magento2
+
+bin/magento setup:install --backend-frontname="adminlogin" \
+--key="biY8vdWx4w8KV5Q59380Fejy36l6ssUb" \
+--db-host="localhost" \
+--db-name="magentodb" \
+--db-user="magentouser" \
+--db-password="password" \
+--language="en_US" \
+--currency="USD" \
+--timezone="America/New_York" \
+--use-rewrites=1 \
+--use-secure=0 \
+--base-url="http://site.lojamagento.cf" \
+--admin-user=adminuser \
+--admin-password=admin123@ \
+--admin-email=admin@newmagento.com \
+--admin-firstname=admin \
+--admin-lastname=user \
+--cleanup-database
       
+Alterando usuário e dando permissão
+chmod 700 /var/www/magento2/app/etc
+chown -R nginx:nginx /var/www/magento2
  
  
+Configurando cron magento
+
+crontab -u nginx -e
  
+* * * * * /usr/bin/php /var/www/html/magento2/bin/magento cron:run | grep -v "Ran jobs by schedule" >> /var/www/html/magento2/var/log/magento.cron.log
+* * * * * /usr/bin/php /var/www/html/magento2/update/cron.php >> /var/www/html/magento2/var/log/update.cron.log
+* * * * * /usr/bin/php /var/www/html/magento2/bin/magento setup:cron:run >> /var/www/html/magento2/var/log/setup.cron.log
  
+ Configurando selinux e firewalld
+ sestatus
+ yum -y install policycoreutils-python
  
+ cd /var/www/html
  
- 
- 
+semanage fcontext -a -t httpd_sys_rw_content_t '/var/www/html/magento2(/.*)?'
+semanage fcontext -a -t httpd_sys_rw_content_t '/var/www/html/magento2/app/etc(/.*)?'
+semanage fcontext -a -t httpd_sys_rw_content_t '/var/www/html/magento2/var(/.*)?'
+semanage fcontext -a -t httpd_sys_rw_content_t '/var/www/html/magento2/pub/media(/.*)?'
+semanage fcontext -a -t httpd_sys_rw_content_t '/var/www/html/magento2/pub/static(/.*)?'
+restorecon -Rv '/var/www/html/magento2/'
  
