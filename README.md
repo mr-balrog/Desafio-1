@@ -169,3 +169,5 @@ restorecon -Rv '/var/www/html/magento2/'
 Acessando Magento
 
 Abri a url site.lojamagento.cf no navegador
+
+
