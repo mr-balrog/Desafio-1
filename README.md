@@ -334,7 +334,7 @@ Dentro da tag </tomcat-users ...> insira usuário e senha
 
 Para testar atualiza a pagina inicial do apache tomcat e faça o login no gerenciador de aplicativo ou gerenciador de hosts.
 
-Certificado SSL
+- Certificado SSL
 
 Instalando Certbot
 
