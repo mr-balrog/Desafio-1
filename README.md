@@ -259,3 +259,77 @@ systemctl restart nginx
 Inserir o ip no navegador e concluir a instalação
 
 
+Tomcat
+
+- Instalando java
+yum install java-1.8.0-openjdk.x86_64
+java -version
+
+- Criando um usuário dedicado
+
+groupadd tomcat
+mkdir /opt/tomcat
+useradd -s /bin/nologin -g tomcat -d /opt/tomcat tomcat
+
+
+- Download do tomcat
+
+cd ~
+wget http://www-us.apache.org/dist/tomcat/tomcat-8/v8.0.33/bin/apache-tomcat-8.0.33.tar.gz
+sudo tar -zxvf apache-tomcat-8.0.33.tar.gz -C /opt/tomcat --strip-components=1
+
+Dando permissões
+
+cd /opt/tomcat
+chgrp -R tomcat conf
+chmod g+rwx conf
+chmod g+r conf/*
+chown -R tomcat logs/ temp/ webapps/ work/
+
+chgrp -R tomcat bin
+chgrp -R tomcat lib
+chmod g+rwx bin
+chmod g+r bin/*
+
+- Editando o arquivo de tomcat.service
+
+vim /etc/systemd/system/tomcat.service
+
+[Unit]
+Description=Apache Tomcat Web Application Container
+After=syslog.target network.target
+
+[Service]
+Type=forking
+
+Environment=JAVA_HOME=/usr/lib/jvm/jre
+Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid
+Environment=CATALINA_HOME=/opt/tomcat
+Environment=CATALINA_BASE=/opt/tomcat
+Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/bin/kill -15 $MAINPID
+
+User=tomcat
+Group=tomcat
+
+[Install]
+WantedBy=multi-user.target
+
+Iniciar o serviço e configurar para o tomcat inicie com o sistema
+systemctl start tomcat.service
+systemctl enable tomcat.service
+
+Para testar a instalação, inseri a url no navegador
+tomcat.lojamagento.cf:8080
+
+Gerenciando a interface web
+
+vim /opt/tomcat/conf/tomcat-users.xml
+
+Dentro da tag </tomcat-users ...> insira usuário e senha
+<user username="yourusername" password="yourpassword" roles="manager-gui,admin-gui"/>
+
+Para testar atualiza a pagina inicial do apache tomcat e faça o login no gerenciador de aplicativo ou gerenciador de hosts.
