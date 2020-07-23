@@ -333,3 +333,23 @@ Dentro da tag </tomcat-users ...> insira usuário e senha
 <user username="yourusername" password="yourpassword" roles="manager-gui,admin-gui"/>
 
 Para testar atualiza a pagina inicial do apache tomcat e faça o login no gerenciador de aplicativo ou gerenciador de hosts.
+
+Certificado SSL
+
+Instalando Certbot
+
+yum install certbot python2-certbot-nginx
+Obtendo o certificado e solicitando ao Certbot edite as configurações do Nginx automaticamente para atendê-la, ativando o acesso HTTPS em uma única etapa.
+ 
+sudo certbot --nginx
+certbot --nginx
+
+Adicionando a cron para renovação automatica
+
+echo "0 0,12 * * * root python -c 'import random; 
+import time; time.sleep(random.random() * 3600)' && certbot 
+renew -q" | sudo tee -a /etc/crontab > /dev/null
+
+Confirme se o Certbot funcionou
+Para confirmar se seu site está configurado corretamente, insira a url no navegador e procure o ícone de cadeado na barra de URL ou acesse https://www.ssllabs.com/ssltest/ .
+
